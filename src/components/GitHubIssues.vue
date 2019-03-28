@@ -35,16 +35,7 @@
     <hr>
     <br>
 
-    <template v-if="selectedIssue.id">
-        <h2>{{ selectedIssue.title }}</h2>
-        <div>{{ selectedIssue.body }}</div>
-        <a @click.prevent.stop="clearIssue()"
-           href=""
-           class="btn btn-primary">Voltar</a>
-    </template>
-
-    <table v-if="!selectedIssue.id"
-           class="table table-sm table-bordered">
+    <table class="table table-sm table-bordered">
       <thead>
         <tr>
           <th width="100">Número</th>
@@ -55,7 +46,7 @@
       <tbody>
         <tr v-if="loader.getIssues || loader.getIssue">
             <td class="text-center" colspan="2">
-                <img src="/static/loading.svg" alt="">
+              <img src="/static/loading.svg" alt="">
             </td>
         </tr>
 
@@ -64,9 +55,14 @@
                 v-for="issue in issues"
                 :key="issue.number">
                 <td>
-                    <a @click.prevent.stop="getIssue(issue)"
-                       href="">{{ issue.number }}</a>
-                    <img v-if="issue.is_loading" src="/static/loading.svg" alt="" height="20">
+                  <router-link :to="{name: 'GitHubIssue',
+                  params: {
+                    name: username,
+                    repos: repository,
+                    issue: issue.number
+                    }}">
+                    {{ issue.number }}
+                  </router-link>
                 </td>
                 <td>{{ issue.title }}</td>
             </tr>
@@ -89,7 +85,6 @@ export default {
       username: '',
       repository: '',
       issues: [],
-      selectedIssue: {},
       loader: {
         getIssues: false,
         getIssue: false,
@@ -111,20 +106,6 @@ export default {
           this.loader.getIssues = false;
         });
       }
-    },
-    getIssue(issue) {
-      if (this.username && this.repository) {
-        this.$set(issue, 'is_loading', true);
-        const url = `https://api.github.com/repos/${this.username}/${this.repository}/issues/${issue.number}`;
-        axios.get(url).then((response) => {
-          this.selectedIssue = response.data;
-        }).finally(() => {
-          this.$set(issue, 'is_loading', false);
-        });
-      }
-    },
-    clearIssue() {
-      this.selectedIssue = {};
     },
   },
 };
